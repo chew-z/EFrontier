@@ -4,7 +4,9 @@ function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
     if nargin < 4, N = 20;          end
     if nargin < 5, rf = 0.00001;    end
 
-    mu = linspace(min(Mu), max(Mu), N);
+    mu = linspace(min(Mu), 2*max(Mu), N);   % How one can find good range (not too wide, not too narrow)? 
+    % The equally spaced search here is ineffective. We should look in a range [mu(min(sigma)) mu(max(sharpe))] with points concentrated
+    % around mu(max(sharpe)) - tangency portfolio.
     % Sigma = ones(1, N);
 	f = zeros(length(Mu),1);
     if bd == 1
@@ -15,7 +17,7 @@ function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
         beq = [];
     end            
 	w = zeros(length(Mu), N);
-	options = optimset('Algorithm','interior-point-convex','TolFun',1e-10, 'Display', 'iter');
+	options = optimset('Algorithm','interior-point-convex','TolFun',1e-10, 'Display', 'off');
     
     for i=1:N
         [x,~,fval] = quadprog(Cov,f,[],[],[Aeq; Mu], [beq; mu(i)],[],[],[],options);
@@ -23,7 +25,7 @@ function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
             w(:,i) = x; 
             Sigma(i) = sqrt(w(:,i)'*Cov*w(:,i));
         else
-            Sigma(i) = Inf;    % There could be many reasons qudprog returns negative fval. Zero (iterations exceeded maxIter).
+            Sigma(i) = Inf;    % There could be many reasons quadprog returns negative fval. Zero (iterations exceeded maxIter).
                                % is also not such a great result. Check input. Run with 'Display', 'iter'. 
         end 
     end
