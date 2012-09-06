@@ -1,10 +1,10 @@
 % finds efficient frontiers t(k)..t(k+N) and plots results
 % input - covariance matrices and mean returns vectors
 
-K = 25;			% how many points per each ef
-N = 10;			% how many steps
+K = 20;			% how many points per each ef
+N = 1;			% how many steps
 Offset = 200;	% where to start
-sharpe= zeros(N, K); sigma = zeros(N, K); mu = zeros(N, K);
+sharpe= zeros(N, 2*K); sigma = zeros(N, 2*K); mu = zeros(N, 2*K);
 bounded = 1; % 1 - Sum(weights) = 1
 
 msgid = 'optim:quadprog:HessianNotSym'; % Quadprog checks norm(H-H',inf) > eps 
@@ -13,7 +13,7 @@ warning('off', msgid);
 
 for j=Offset+1:Offset+N
 	m = M(j,:); cv = CV(:,:,j);
-	[sharpe(j-Offset,:), sigma(j-Offset,:), mu(j-Offset,:)] = ef(m, cv, bounded, K);
+	[sharpe(j-Offset,:), sigma(j-Offset,:), mu(j-Offset,:)] = ef2(m, cv, bounded, K);
 end
 warning('on', msgid);
 
@@ -29,4 +29,4 @@ for j = 1:N
 end	
 hold off
 
-clear m cv j Offset K N msgid
+clear m cv j Offset K N msgid bounded
