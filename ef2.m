@@ -1,14 +1,14 @@
-function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
-% searches for returns effective frontier in two steps
-% more smooth around tangency (max(sharpe))
+function [i_tang, sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
+% ef - searches for effective frontier in two iterations
+% more smooth around tangency point (max(sharpe))
 % bd - flag [0, 1]. if bd == 1 Sum(w(i)) = 1    
     if nargin < 4, N = 20;          end
     if nargin < 5, rf = 0.00001;    end
 
     mu = linspace(min(Mu), 5*max(Mu), N);   % How one can find good range (not too wide, not too narrow)? 
-    % The equally spaced search here is ineffective. We should look in a range [mu(min(sigma)) mu(max(sharpe))] with points concentrated
+    % Equally spaced linspace here is ineffective, especially with wide range. With narrow range we could not reach max sharpe.
+    % For good results we should look in a range [mu(min(sigma)) mu(max(sharpe))] with points concentrated
     % around mu(max(sharpe)) - tangency portfolio.
-    % Sigma = ones(1, N);
 
     f = zeros(length(Mu),1);
     if bd == 1
@@ -29,9 +29,9 @@ function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
         end 
     end
     sharpe = (mu-rf) ./ Sigma;
-    imin = find(Sigma == min(Sigma));
-    imax = find(sharpe == max(sharpe));
-    % if imin <> imax
+    imin = find(Sigma == min(Sigma));       % more or less minimu variance point
+    imax = find(sharpe == max(sharpe));     % more or less tangency point
+    % if imin <> imax --> 
     mu = [linspace(mu(imin), mu(imax-1), N), linspace(mu(imax-1), mu(imax+1), N)];  % overlap in mu(imax-1)
     w = zeros(length(Mu), 2*N);
     Sigma = ones(1, 2*N);
@@ -51,7 +51,7 @@ function [sharpe, Sigma, mu] = ef(Mu, Cov, bd, N, rf)
     % sigma_eff = Sigma((mu >= mu(imin)));
     % m_eff = mu(mu > mu(imin));
     % sh = sharpe(mu > mu(imin));
-    % i_tang = find(sharpe == max(sharpe));
+    i_tang = find(sharpe == max(sharpe));
     % weight_tang = w(:,i_tang);
     % sharpe_tang = sharpe(i_tang);
 
