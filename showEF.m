@@ -1,10 +1,14 @@
 % finds efficient frontiers t(k)..t(k+N) and plots results
 % input - covariance matrices and mean returns vectors
+% plots efficient frontier, marks minimum variance point(o) and max sharpe point(x)
+% 
 
-K = 20;			% how many points per each ef
-N = 1;			% how many steps
-Offset = 200;	% where to start
+K = 20;			% how many points per each frontier
+N = 1;			% how many time steps
+Offset = 400;	% where to start
 sharpe= zeros(N, 2*K); sigma = zeros(N, 2*K); mu = zeros(N, 2*K);
+sh = zeros(N,1); si = zeros(N,1); mi = zeros(N,1);
+sht = zeros(N,1); sit = zeros(N,1); mit = zeros(N,1);
 bounded = 1; % 1 - Sum(weights) = 1
 
 msgid = 'optim:quadprog:HessianNotSym'; % Quadprog checks norm(H-H',inf) > eps 
@@ -13,7 +17,10 @@ warning('off', msgid);
 
 for j=Offset+1:Offset+N
 	m = M(j,:); cv = CV(:,:,j);
-	[sharpe(j-Offset,:), sigma(j-Offset,:), mu(j-Offset,:)] = ef2(m, cv, bounded, K);
+	[it, sharpe(j-Offset,:), sigma(j-Offset,:), mu(j-Offset,:)] = ef2(m, cv, bounded, K);						% effective frontier
+	[sh(j-Offset), si(j-Offset), mi(j-Offset)] = minvar(m, cv);													% minimum variance point
+	if length(it) > 1, it = it(1); end	% give warning
+	sht(j-Offset) = sharpe(j-Offset,it); sit(j-Offset) = sigma(j-Offset,it); mit(j-Offset) = mu(j-Offset,it);	% max sharpe point
 end
 warning('on', msgid);
 
@@ -21,12 +28,17 @@ warning('on', msgid);
 figure(1); clf(1);
 subplot(2,1,1); 		title('Sharpe vs sigma'); xlabel('sigma'); ylabel('sharpe');
 for j = 1:N 
-	hold all; plot(sigma(j,:), sharpe(j,:));
+	hold all; plot(sigma(j,:), sharpe(j,:)); 
+	plot(si(j), sh(j),'o-','MarkerSize',10); 
+	plot(sit(j), sht(j),'x-','MarkerSize',10);
 end
 subplot(2,1,2); 		title('Efficient frontier'); xlabel('sigma'); ylabel('returns');
 for j = 1:N
-	hold all; plot(sigma(j,:), mu(j,:));
-end	
+	hold all; plot(sigma(j,:), mu(j,:)); 
+	plot(si(j), mi(j), 'o-','MarkerSize',10); 
+	plot(sit(j), mit(j), 'x-','MarkerSize',10);
+end
+
 hold off
 
 clear m cv j Offset K N msgid bounded
