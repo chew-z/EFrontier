@@ -4,8 +4,8 @@ function [sharpe, sigma, mu] = minvar(Mu, Cov)
 %	
 	numalphas = length(Mu);
 	
-	iS = pinv(Cov); % inverse covariance matrix with pinv
-    % set weigths  ( inv(Cov) * 1 / 1'*inv(Cov)*1
+	iS = pinv(Cov); % inverse of covariance matrix with pinv
+    % set weigths  inv(Cov) * 1 / 1'*inv(Cov)*1
     weights = (iS * ones(numalphas,1)) / (ones(1,numalphas) * iS * ones(numalphas,1));
 
     sigma = sqrt(weights' *Cov* weights);
