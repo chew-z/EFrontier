@@ -5,7 +5,7 @@
 
 K = 10;			% how many points per each frontier
 N = 1;			% how many time steps
-Offset = 350;	% where to start
+Offset = 100;	% where to start
 sharpe= zeros(N, 2*K); sigma = zeros(N, 2*K); mu = zeros(N, 2*K);
 sharpe0= zeros(N, 2*K); sigma0 = zeros(N, 2*K); mu0 = zeros(N, 2*K);
 sh = zeros(N,1); si = zeros(N,1); mi = zeros(N,1);
@@ -19,8 +19,8 @@ warning('off', msgid);
 for j=Offset+1:Offset+N
 	m = M(j,:); cv = CV(:,:,j);
 	[it, sharpe(j-Offset,:), sigma(j-Offset,:), mu(j-Offset,:)] = ef2(m, cv, 1, K);						% effective frontier
-	[~, sharpe0(j-Offset,:), sigma0(j-Offset,:), mu0(j-Offset,:)] = ef2(m, cv, 0, K);							% combination of tangency portfolio and risk-free asset allocation
-	[sh(j-Offset), si(j-Offset), mi(j-Offset)] = minvar(m, cv);													% minimum variance point
+	[~, sharpe0(j-Offset,:), sigma0(j-Offset,:), mu0(j-Offset,:)] = ef2(m, cv, 0, K);					% combination of tangency portfolio and risk-free asset allocation
+	[sh(j-Offset), si(j-Offset), mi(j-Offset)] = minvar(m, cv);											% minimum variance point
 	if length(it) > 1, it = it(1); end	% give warning
 	sht(j-Offset) = sharpe(j-Offset,it); sit(j-Offset) = sigma(j-Offset,it); mit(j-Offset) = mu(j-Offset,it);	% max sharpe point
 end
@@ -45,6 +45,16 @@ for j = 1:N
 end
 
 hold off
+% wrap results into structure
+dane = struct('sharpe', sharpe, ...
+	'sharpe0', sharpe0, 		...
+	'mu', mu, 					...
+	'mu0', mu0, 				...
+	'sigma', sigma, 			... 
+	'sigma0', sigma0, 			...
+	'i_tang', it);
 
 % clean the mess with variables
 clear m cv j Offset K N msgid bounded
+clear sh sht si sit mi mit
+clear sharpe sharpe0 mu mu0 sigma sigma0 it
